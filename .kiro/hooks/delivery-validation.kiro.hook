@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Delivery Validation",
+  "description": "Verify actual deliverables match stated requirements when declaring work complete",
+  "version": "1",
+  "when": {
+    "type": "manual"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "You are declaring a task complete. You MUST validate that you actually delivered what was promised. This prevents premature declarations of completion and ensures accountability.\n\n## Validation Process\n\n**Step 1: Requirements Mapping**\n- List every requirement from the original task\n- For each requirement, identify the specific deliverable that addresses it\n- Flag any requirements that lack corresponding deliverables\n\n**Step 2: Deliverable Verification**\n- For each claimed deliverable, provide evidence it exists and works\n- Test functionality where applicable\n- Verify quality meets stated standards\n\n**Step 3: Success Criteria Check**\n- Review the original success criteria for the task\n- Verify each criterion is actually met\n- Provide evidence for each criterion\n\n**Step 4: Gap Analysis**\n- Identify any gaps between what was promised and what was delivered\n- Assess the impact of any missing elements\n- Determine if gaps are acceptable or require additional work\n\n## Required Output Format\n\n### Requirements Fulfillment Table:\n| Requirement | Deliverable | Status | Evidence |\n|-------------|-------------|---------|----------|\n| [Each req] | [Specific deliverable] | ✅/❌ | [Link/proof] |\n\n### Success Criteria Verification:\n| Criterion | Status | Evidence |\n|-----------|---------|----------|\n| [Each criterion] | ✅/❌ | [Proof of achievement] |\n\n### Gap Analysis:\n- **Missing Elements**: [What was promised but not delivered]\n- **Quality Gaps**: [Where deliverables don't meet standards]\n- **Scope Reductions**: [Where requirements were interpreted narrowly]\n\n### Final Validation:\n- [ ] Task fully complete (all requirements met, all criteria achieved)\n- [ ] Task substantially complete (minor gaps acceptable)\n- [ ] Task incomplete (significant gaps require more work)\n\nOnly declare the task complete if validation shows all requirements are truly fulfilled."
+  }
+}

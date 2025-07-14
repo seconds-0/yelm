@@ -1,0 +1,78 @@
+{
+  "name": "yelm-coding-agent",
+  "version": "0.1.0",
+  "description": "Advanced CLI-based coding assistant with sophisticated context management",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/yelm-coding-agent.git"
+  },
+  "keywords": [
+    "cli",
+    "coding-assistant",
+    "ai",
+    "context-management",
+    "typescript"
+  ],
+  "author": "Yelm Development Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "echo 'Development server - to be implemented'",
+    "build": "echo 'Build system - to be implemented'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "vitest run --coverage --reporter=verbose",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist/ bundle/ coverage/ .yelm/context7-cache/",
+    "context7:test": "node scripts/context7-cli.js"
+  },
+  "bin": {
+    "yelm": "dist/index.js"
+  },
+  "files": [
+    "bundle/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "commander": "^12.0.0",
+    "zod": "^3.22.4",
+    "axios": "^1.6.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "inquirer": "^9.2.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.4.5",
+    "mime-types": "^3.0.1",
+    "shell-quote": "^1.8.3"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^20.11.24",
+    "@types/shell-quote": "^1.7.5",
+    "@vitest/coverage-v8": "^3.1.1",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.24.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-import": "^2.31.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.30.1",
+    "vitest": "^3.2.4"
+  }
+}

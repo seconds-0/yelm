@@ -1,0 +1,21 @@
+{
+  "timestamp": 1752529403888,
+  "analysis": {
+    "frameworks": [],
+    "languages": [
+      "TypeScript",
+      "JavaScript"
+    ],
+    "buildTools": [
+      "esbuild"
+    ],
+    "fileCount": 0,
+    "structure": {
+      "directories": [],
+      "configFiles": [],
+      "sourceFiles": [],
+      "testFiles": []
+    },
+    "patterns": []
+  }
+}
