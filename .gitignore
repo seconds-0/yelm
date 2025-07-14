@@ -1,0 +1,14 @@
+# Ignore reference OSS projects (not part of our repo)
+references/
+
+# Common build artifacts
+node_modules/
+dist/
+build/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# macOS specifics
+.DS_Store 
