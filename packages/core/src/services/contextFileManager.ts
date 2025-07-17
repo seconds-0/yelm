@@ -163,8 +163,8 @@ export class ContextFileManager {
     files: ContextFileResult[],
     workingDir: string,
     fileService?: FileDiscoveryService
-  ): Promise<(ContextFileResult & { content: string })[]> {
-    const processedFiles: (ContextFileResult & { content: string })[] = [];
+  ): Promise<Array<ContextFileResult & { content: string }>> {
+    const processedFiles: Array<ContextFileResult & { content: string }> = [];
     
     for (const file of files) {
       try {
@@ -211,7 +211,7 @@ export class ContextFileManager {
    * Combine content from multiple files
    */
   private combineFileContents(
-    files: (ContextFileResult & { content: string })[],
+    files: Array<ContextFileResult & { content: string }>,
     workingDir: string
   ): string {
     return files

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2025 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 // Simple test for our benchmarking system
 export function runBenchmarkTest() {
   console.log('🧪 Testing Yelm Benchmarking System...');

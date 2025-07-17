@@ -8,7 +8,7 @@ import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
-import { ContextFileScanner, FileIndex } from './directoryScanner.js';
+import { ContextFileScanner } from './directoryScanner.js';
 import { FileDiscoveryService } from './fileDiscoveryService.js';
 
 /**
@@ -75,7 +75,7 @@ interface CacheEntry {
  * Custom errors for context file discovery
  */
 export class ContextFileError extends Error {
-  constructor(message: string, public readonly code: string) {
+  constructor(message: string, readonly code: string) {
     super(message);
     this.name = 'ContextFileError';
   }
@@ -141,7 +141,7 @@ export class ContextFileDiscovery {
    * Discover context files starting from the working directory
    */
   async discover(options: DiscoveryOptions): Promise<ContextFileResult[]> {
-    const { workingDir, debug = false, extensionContextFiles = [], fileService } = options;
+    const { workingDir, extensionContextFiles = [], fileService } = options;
     
     this.logger.debug(`Starting discovery from: ${workingDir}`);
     
@@ -181,7 +181,7 @@ export class ContextFileDiscovery {
       this.logger.debug(`Discovery complete. Found ${results.length} files`);
       return results;
       
-    } catch (error) {
+    } catch (_error) {
       this.logger.error(`Discovery failed: ${error}`);
       throw error;
     }
@@ -196,7 +196,7 @@ export class ContextFileDiscovery {
     try {
       // Check if directory exists and is accessible
       await fs.access(directory, fsSync.constants.R_OK);
-    } catch (error) {
+    } catch (_error) {
       this.logger.debug(`Directory not accessible: ${directory}`);
       return null;
     }
@@ -253,7 +253,7 @@ export class ContextFileDiscovery {
           level: 0 // Will be set correctly by caller
         };
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist or isn't accessible
       this.logger.debug(`File not found: ${filePath}`);
     }
@@ -280,7 +280,7 @@ export class ContextFileDiscovery {
           results.push(result);
           break; // Only use first global directory that has files
         }
-      } catch (error) {
+      } catch (_error) {
         this.logger.debug(`Global directory not accessible: ${globalPath}`);
       }
     }
@@ -328,7 +328,7 @@ export class ContextFileDiscovery {
       
       this.logger.debug(`Found ${results.length} context files using optimized scanner`);
       
-    } catch (error) {
+    } catch (_error) {
       this.logger.error(`Optimized discovery failed, falling back to original method: ${error}`);
       // Fallback to original method
       return this.discoverProjectFiles(startDir);
@@ -401,7 +401,7 @@ export class ContextFileDiscovery {
         if (stats.isDirectory()) {
           return currentDir;
         }
-      } catch (error) {
+      } catch (_error) {
         // Continue searching
       }
       
@@ -429,7 +429,7 @@ export class ContextFileDiscovery {
             level: 1000 // Extensions come after all other files
           });
         }
-      } catch (error) {
+      } catch (_error) {
         this.logger.warn(`Extension file not accessible: ${filePath}`);
       }
     }
@@ -487,7 +487,7 @@ export class ContextFileDiscovery {
           this.cache.delete(cacheKey);
           return false;
         }
-      } catch (error) {
+      } catch (_error) {
         // Directory no longer exists or accessible
         this.cache.delete(cacheKey);
         return false;
@@ -515,7 +515,7 @@ export class ContextFileDiscovery {
       try {
         const stats = await fs.stat(dir);
         dirModTimes.set(dir, stats.mtime.getTime());
-      } catch (error) {
+      } catch (_error) {
         // Directory not accessible, skip caching
         this.logger.debug(`Cannot cache, directory not accessible: ${dir}`);
         return;

@@ -53,7 +53,7 @@ export class ContextConfig {
     this.environment = {
       isTest: !!(process.env.VITEST || process.env.NODE_ENV?.includes('test')),
       isDebug: !!(process.env.DEBUG || process.env.NODE_ENV === 'development'),
-      homeDir: require('os').homedir(),
+      homeDir: process.env.HOME || process.env.USERPROFILE || '',
       workingDir: process.cwd(),
       ...environment
     };
@@ -119,6 +119,14 @@ export class ContextConfig {
         };
         break;
       case 'production':
+        envDefaults = {
+          cacheEnabled: true,
+          maxDirs: 200,
+          maxDepth: 20
+        };
+        break;
+      default:
+        // Use production defaults for unknown environments
         envDefaults = {
           cacheEnabled: true,
           maxDirs: 200,
