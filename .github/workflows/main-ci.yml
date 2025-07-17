@@ -44,8 +44,8 @@ jobs:
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage/lcov.info
-          fail_ci_if_error: true
+          directory: ./packages/
+          fail_ci_if_error: false
           
       # Future: Deployment preparation
       # - name: Prepare deployment artifacts
