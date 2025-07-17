@@ -27,6 +27,10 @@ export interface ContextFileConfig {
   cacheEnabled: boolean;
   /** Maximum number of directories to scan */
   maxDirs: number;
+  /** Maximum number of cache entries to keep */
+  maxCacheSize: number;
+  /** Maximum age of cache entries in milliseconds */
+  maxCacheAge: number;
 }
 
 /**
@@ -69,6 +73,8 @@ interface CacheEntry {
   timestamp: number;
   /** Directory modification times for cache invalidation */
   dirModTimes: Map<string, number>;
+  /** Last access time for LRU eviction */
+  lastAccessed: number;
 }
 
 /**
@@ -114,7 +120,9 @@ export const DEFAULT_CONTEXT_CONFIG: ContextFileConfig = {
     'temp'
   ],
   cacheEnabled: true,
-  maxDirs: 200
+  maxDirs: 200,
+  maxCacheSize: 100,
+  maxCacheAge: 5 * 60 * 1000 // 5 minutes
 };
 
 /**
@@ -122,6 +130,11 @@ export const DEFAULT_CONTEXT_CONFIG: ContextFileConfig = {
  */
 export class ContextFileDiscovery {
   private cache = new Map<string, CacheEntry>();
+  private cacheMetrics = {
+    hits: 0,
+    misses: 0,
+    evictions: 0
+  };
   private scanner: ContextFileScanner;
   private readonly logger = {
     debug: (message: string) => this.debug && console.debug(`[ContextFileDiscovery] ${message}`),
@@ -147,7 +160,7 @@ export class ContextFileDiscovery {
     
     // Check cache first
     const cacheKey = this.getCacheKey(workingDir);
-    if (this.config.cacheEnabled && this.isCacheValid(cacheKey, workingDir)) {
+    if (this.config.cacheEnabled && await this.isCacheValid(cacheKey, workingDir)) {
       this.logger.debug('Using cached results');
       return this.cache.get(cacheKey)!.results;
     }
@@ -213,13 +226,6 @@ export class ContextFileDiscovery {
     return null;
   }
 
-  /**
-   * Clear the discovery cache
-   */
-  clearCache(): void {
-    this.cache.clear();
-    this.logger.debug('Cache cleared');
-  }
 
   /**
    * Check if a specific file exists and create result
@@ -468,21 +474,28 @@ export class ContextFileDiscovery {
   /**
    * Check if cache is valid for a working directory
    */
-  private isCacheValid(cacheKey: string, _workingDir: string): boolean {
+  private async isCacheValid(cacheKey: string, _workingDir: string): Promise<boolean> {
     const entry = this.cache.get(cacheKey);
-    if (!entry) return false;
-    
-    // Check if cache is too old (5 minutes)
-    const now = Date.now();
-    if (now - entry.timestamp > 5 * 60 * 1000) {
-      this.cache.delete(cacheKey);
+    if (!entry) {
+      this.cacheMetrics.misses++;
       return false;
     }
+    
+    // Check if cache is too old
+    const now = Date.now();
+    if (now - entry.timestamp > this.config.maxCacheAge) {
+      this.cache.delete(cacheKey);
+      this.cacheMetrics.misses++;
+      return false;
+    }
+    
+    // Update last accessed time for LRU
+    entry.lastAccessed = now;
     
     // Check if directories have been modified
     for (const [dir, cachedTime] of entry.dirModTimes.entries()) {
       try {
-        const stats = fsSync.statSync(dir);
+        const stats = await fs.stat(dir);
         if (stats.mtime.getTime() !== cachedTime) {
           this.cache.delete(cacheKey);
           return false;
@@ -494,6 +507,7 @@ export class ContextFileDiscovery {
       }
     }
     
+    this.cacheMetrics.hits++;
     return true;
   }
 
@@ -522,12 +536,65 @@ export class ContextFileDiscovery {
       }
     }
     
+    const now = Date.now();
+    
+    // Evict old entries if cache is full
+    this.evictIfNeeded();
+    
     this.cache.set(cacheKey, {
       results: [...results], // Create copy to avoid mutation
-      timestamp: Date.now(),
-      dirModTimes
+      timestamp: now,
+      dirModTimes,
+      lastAccessed: now
     });
     
     this.logger.debug(`Cached results for: ${workingDir}`);
+  }
+
+  /**
+   * Evict cache entries if we're at capacity
+   */
+  private evictIfNeeded(): void {
+    if (this.cache.size < this.config.maxCacheSize) {
+      return;
+    }
+
+    // Find the least recently used entry
+    let oldestKey: string | null = null;
+    let oldestTime = Date.now();
+    
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.lastAccessed < oldestTime) {
+        oldestTime = entry.lastAccessed;
+        oldestKey = key;
+      }
+    }
+    
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+      this.cacheMetrics.evictions++;
+      this.logger.debug(`Evicted LRU cache entry: ${oldestKey}`);
+    }
+  }
+
+  /**
+   * Get cache performance metrics
+   */
+  getCacheMetrics(): { hits: number; misses: number; evictions: number; hitRate: number; size: number } {
+    const total = this.cacheMetrics.hits + this.cacheMetrics.misses;
+    return {
+      ...this.cacheMetrics,
+      hitRate: total > 0 ? this.cacheMetrics.hits / total : 0,
+      size: this.cache.size
+    };
+  }
+
+  /**
+   * Clear all cache entries
+   */
+  clearCache(): void {
+    this.cache.clear();
+    this.cacheMetrics = { hits: 0, misses: 0, evictions: 0 };
+    this.logger.debug('Cache cleared');
   }
 }

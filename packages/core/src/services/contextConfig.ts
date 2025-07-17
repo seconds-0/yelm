@@ -23,6 +23,10 @@ export interface ContextSettings {
   cacheEnabled?: boolean;
   /** Maximum directories to scan */
   maxDirs?: number;
+  /** Maximum number of cache entries to keep */
+  maxCacheSize?: number;
+  /** Maximum age of cache entries in milliseconds */
+  maxCacheAge?: number;
 }
 
 /**
@@ -165,7 +169,9 @@ export class ContextConfig {
         ...(userSettings.ignorePatterns || [])
       ],
       cacheEnabled: userSettings.cacheEnabled ?? DEFAULT_CONTEXT_CONFIG.cacheEnabled,
-      maxDirs: userSettings.maxDirs ?? DEFAULT_CONTEXT_CONFIG.maxDirs
+      maxDirs: userSettings.maxDirs ?? DEFAULT_CONTEXT_CONFIG.maxDirs,
+      maxCacheSize: userSettings.maxCacheSize ?? DEFAULT_CONTEXT_CONFIG.maxCacheSize,
+      maxCacheAge: userSettings.maxCacheAge ?? DEFAULT_CONTEXT_CONFIG.maxCacheAge
     };
 
     // Remove duplicates
