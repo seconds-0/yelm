@@ -42,9 +42,6 @@ export default tseslint.config(
       '**/*.json',
       '**/coverage/**',
       '**/junit.xml',
-      // Temporarily ignore new service files with lint errors
-      'packages/core/src/services/**',
-      'packages/core/src/utils/memoryDiscovery.ts',
     ],
   },
   eslint.configs.recommended,

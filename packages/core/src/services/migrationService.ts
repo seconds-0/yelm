@@ -5,6 +5,7 @@
  */
 
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
 import { ContextFileError } from './contextFileDiscovery.js';
@@ -141,7 +142,7 @@ export class MigrationService {
           warnings.push(`Target file already exists: ${file.suggestedPath}`);
           canAutoMigrate = false;
         }
-      } catch (error) {
+      } catch (_error) {
         // File doesn't exist, which is good
       }
     }
@@ -215,7 +216,7 @@ export class MigrationService {
 
     try {
       await fs.access(dir);
-    } catch (error) {
+    } catch (_error) {
       return legacyFiles; // Directory doesn't exist or isn't accessible
     }
 
@@ -336,9 +337,9 @@ export class MigrationService {
    */
   private fileExistsSync(filePath: string): boolean {
     try {
-      require('fs').accessSync(filePath, require('fs').constants.F_OK);
+      fsSync.accessSync(filePath, fsSync.constants.F_OK);
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

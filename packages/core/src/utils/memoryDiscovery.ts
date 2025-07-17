@@ -13,8 +13,6 @@ import {
   GEMINI_CONFIG_DIR,
   YELM_CONFIG_DIR,
   CONTEXT_FILE_HIERARCHY,
-  getAllContextFilenames,
-  getAllGeminiMdFilenames,
   getCurrentContextFilename,
 } from '../tools/memoryTool.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
@@ -283,33 +281,6 @@ async function getContextFilePathsHierarchy(
   return finalPaths;
 }
 
-/**
- * @deprecated Use ContextFileDiscovery.discover instead. This function is kept for legacy compatibility.
- */
-async function getGeminiMdFilePathsInternal(
-  currentWorkingDirectory: string,
-  userHomePath: string,
-  debugMode: boolean,
-  fileService: FileDiscoveryService,
-  extensionContextFilePaths: string[] = [],
-): Promise<string[]> {
-  // Redirect to new unified system with legacy filename support
-  const { ContextFileDiscovery } = await import('../services/contextFileDiscovery.js');
-  const { ContextConfig } = await import('../services/contextConfig.js');
-  
-  // Create config that prioritizes legacy GEMINI.md files
-  const legacyConfig = ContextConfig.fromLegacySettings(getAllGeminiMdFilenames());
-  const discovery = new ContextFileDiscovery(legacyConfig.getConfig(), debugMode);
-  
-  const results = await discovery.discover({
-    workingDir: currentWorkingDirectory,
-    debug: debugMode,
-    extensionContextFiles: extensionContextFilePaths,
-    fileService
-  });
-  
-  return results.map(r => r.path);
-}
 
 /**
  * @deprecated Use ContextFileManager.readAndProcessFiles instead

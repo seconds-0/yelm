@@ -199,8 +199,8 @@ export class ContextFileManager {
    */
   private async processFileContent(
     content: string,
-    filePath: string,
-    workingDir: string
+    _filePath: string,
+    _workingDir: string
   ): Promise<string> {
     // For now, just return content as-is
     // In the future, this could process imports, variables, etc.

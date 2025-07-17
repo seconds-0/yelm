@@ -182,8 +182,8 @@ export class ContextFileDiscovery {
       return results;
       
     } catch (_error) {
-      this.logger.error(`Discovery failed: ${error}`);
-      throw error;
+      this.logger.error(`Discovery failed: ${_error}`);
+      throw _error;
     }
   }
 
@@ -308,7 +308,7 @@ export class ContextFileDiscovery {
       const contextFiles = this.scanner.findContextFiles(index, this.config.hierarchy);
       
       // Convert to ContextFileResult objects
-      for (const [directory, fileInfo] of contextFiles.entries()) {
+      for (const [_directory, fileInfo] of contextFiles.entries()) {
         const priority = this.config.hierarchy.indexOf(fileInfo.name);
         if (priority !== -1) {
           // Log migration suggestion for legacy files
@@ -329,7 +329,7 @@ export class ContextFileDiscovery {
       this.logger.debug(`Found ${results.length} context files using optimized scanner`);
       
     } catch (_error) {
-      this.logger.error(`Optimized discovery failed, falling back to original method: ${error}`);
+      this.logger.error(`Optimized discovery failed, falling back to original method: ${_error}`);
       // Fallback to original method
       return this.discoverProjectFiles(startDir);
     }
@@ -468,7 +468,7 @@ export class ContextFileDiscovery {
   /**
    * Check if cache is valid for a working directory
    */
-  private isCacheValid(cacheKey: string, workingDir: string): boolean {
+  private isCacheValid(cacheKey: string, _workingDir: string): boolean {
     const entry = this.cache.get(cacheKey);
     if (!entry) return false;
     
