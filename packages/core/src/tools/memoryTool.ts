@@ -7,6 +7,7 @@
 import { BaseTool, ToolResult } from './tools.js';
 import { FunctionDeclaration, Type } from '@google/genai';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
 
@@ -47,43 +48,60 @@ Do NOT use this tool:
 `;
 
 export const GEMINI_CONFIG_DIR = '.gemini';
-export const DEFAULT_CONTEXT_FILENAME = 'GEMINI.md';
-export const MEMORY_SECTION_HEADER = '## Gemini Added Memories';
+export const YELM_CONFIG_DIR = '.yelm';
+export const DEFAULT_CONTEXT_FILENAME = 'agents.md';
+export const CONTEXT_FILE_HIERARCHY = ['agents.md', 'CLAUDE.md', 'GEMINI.md', '.cursor/rules'];
+export const MEMORY_SECTION_HEADER = '## Yelm Added Memories';
 
-// This variable will hold the currently configured filename for GEMINI.md context files.
-// It defaults to DEFAULT_CONTEXT_FILENAME but can be overridden by setGeminiMdFilename.
-let currentGeminiMdFilename: string | string[] = DEFAULT_CONTEXT_FILENAME;
+// This variable will hold the currently configured filename for context files.
+// It defaults to DEFAULT_CONTEXT_FILENAME but can be overridden by setContextFilename.
+let currentContextFilename: string | string[] = DEFAULT_CONTEXT_FILENAME;
 
-export function setGeminiMdFilename(newFilename: string | string[]): void {
+export function setContextFilename(newFilename: string | string[]): void {
   if (Array.isArray(newFilename)) {
     if (newFilename.length > 0) {
-      currentGeminiMdFilename = newFilename.map((name) => name.trim());
+      currentContextFilename = newFilename.map((name) => name.trim());
     }
   } else if (newFilename && newFilename.trim() !== '') {
-    currentGeminiMdFilename = newFilename.trim();
+    currentContextFilename = newFilename.trim();
   }
 }
 
-export function getCurrentGeminiMdFilename(): string {
-  if (Array.isArray(currentGeminiMdFilename)) {
-    return currentGeminiMdFilename[0];
+export function getCurrentContextFilename(): string {
+  if (Array.isArray(currentContextFilename)) {
+    return currentContextFilename[0];
   }
-  return currentGeminiMdFilename;
+  return currentContextFilename;
 }
 
-export function getAllGeminiMdFilenames(): string[] {
-  if (Array.isArray(currentGeminiMdFilename)) {
-    return currentGeminiMdFilename;
+export function getAllContextFilenames(): string[] {
+  if (Array.isArray(currentContextFilename)) {
+    return currentContextFilename;
   }
-  return [currentGeminiMdFilename];
+  return [currentContextFilename];
 }
+
+// Backward compatibility exports (deprecated)
+export const setGeminiMdFilename = setContextFilename;
+export const getCurrentGeminiMdFilename = getCurrentContextFilename;
+export const getAllGeminiMdFilenames = getAllContextFilenames;
 
 interface SaveMemoryParams {
   fact: string;
 }
 
 function getGlobalMemoryFilePath(): string {
-  return path.join(homedir(), GEMINI_CONFIG_DIR, getCurrentGeminiMdFilename());
+  // Prefer .yelm directory over .gemini for new installations
+  const yelmDir = path.join(homedir(), YELM_CONFIG_DIR);
+  const geminiDir = path.join(homedir(), GEMINI_CONFIG_DIR);
+  
+  // Check if .yelm directory exists, otherwise use .gemini
+  try {
+    fsSync.accessSync(yelmDir, fsSync.constants.F_OK);
+    return path.join(yelmDir, getCurrentContextFilename());
+  } catch {
+    return path.join(geminiDir, getCurrentContextFilename());
+  }
 }
 
 /**
