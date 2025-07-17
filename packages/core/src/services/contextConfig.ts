@@ -6,6 +6,7 @@
 
 import * as path from 'path';
 import { ContextFileConfig, DEFAULT_CONTEXT_CONFIG, ConfigurationError } from './contextFileDiscovery.js';
+import { validateContextHierarchy } from './contextFilePatterns.js';
 
 /**
  * User-configurable context settings
@@ -23,6 +24,10 @@ export interface ContextSettings {
   cacheEnabled?: boolean;
   /** Maximum directories to scan */
   maxDirs?: number;
+  /** Maximum number of cache entries to keep */
+  maxCacheSize?: number;
+  /** Maximum age of cache entries in milliseconds */
+  maxCacheAge?: number;
 }
 
 /**
@@ -53,7 +58,7 @@ export class ContextConfig {
     this.environment = {
       isTest: !!(process.env.VITEST || process.env.NODE_ENV?.includes('test')),
       isDebug: !!(process.env.DEBUG || process.env.NODE_ENV === 'development'),
-      homeDir: require('os').homedir(),
+      homeDir: process.env.HOME || process.env.USERPROFILE || '',
       workingDir: process.cwd(),
       ...environment
     };
@@ -125,6 +130,14 @@ export class ContextConfig {
           maxDepth: 20
         };
         break;
+      default:
+        // Use production defaults for unknown environments
+        envDefaults = {
+          cacheEnabled: true,
+          maxDirs: 200,
+          maxDepth: 20
+        };
+        break;
     }
 
     return new ContextConfig({ ...envDefaults, ...userSettings }, environmentConfig);
@@ -157,7 +170,9 @@ export class ContextConfig {
         ...(userSettings.ignorePatterns || [])
       ],
       cacheEnabled: userSettings.cacheEnabled ?? DEFAULT_CONTEXT_CONFIG.cacheEnabled,
-      maxDirs: userSettings.maxDirs ?? DEFAULT_CONTEXT_CONFIG.maxDirs
+      maxDirs: userSettings.maxDirs ?? DEFAULT_CONTEXT_CONFIG.maxDirs,
+      maxCacheSize: userSettings.maxCacheSize ?? DEFAULT_CONTEXT_CONFIG.maxCacheSize,
+      maxCacheAge: userSettings.maxCacheAge ?? DEFAULT_CONTEXT_CONFIG.maxCacheAge
     };
 
     // Remove duplicates
@@ -194,9 +209,12 @@ export class ContextConfig {
         throw new ConfigurationError('Hierarchy entries must be non-empty strings');
       }
       
-      // Allow .cursor/rules as a special case
-      if (entry.includes('..') || (entry.includes('/') && entry !== '.cursor/rules')) {
-        throw new ConfigurationError('Hierarchy entries cannot contain path separators (except .cursor/rules)');
+      // Use centralized validation
+      try {
+        validateContextHierarchy([entry]);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new ConfigurationError(`Invalid hierarchy entry: ${entry} - ${errorMessage}`);
       }
     }
 

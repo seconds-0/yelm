@@ -13,12 +13,11 @@ import {
   GEMINI_CONFIG_DIR,
   YELM_CONFIG_DIR,
   CONTEXT_FILE_HIERARCHY,
-  getAllContextFilenames,
-  getAllGeminiMdFilenames,
   getCurrentContextFilename,
 } from '../tools/memoryTool.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { processImports } from './memoryImportProcessor.js';
+import { resolveContextFilePath } from '../services/contextFilePatterns.js';
 
 // Simple console logger, similar to the one previously in CLI's config.ts
 // TODO: Integrate with a more robust server-side logger if available/appropriate.
@@ -78,7 +77,7 @@ async function findContextFileInDirectory(
   }
   
   // Special handling for .cursor/rules (last in hierarchy)
-  const cursorRulesPath = path.join(directory, '.cursor', 'rules');
+  const cursorRulesPath = resolveContextFilePath('.cursor/rules', directory);
   try {
     await fs.access(cursorRulesPath, fsSync.constants.R_OK);
     if (debugMode) {
@@ -245,7 +244,7 @@ async function getContextFilePathsHierarchy(
     }
   }
   
-  // Special search for .cursor/rules
+  // Special search for .cursor/rules using centralized path resolution
   const cursorDirs = await bfsFileSearch(resolvedCwd, {
     fileName: 'rules',
     maxDirs: MAX_DIRECTORIES_TO_SCAN_FOR_MEMORY,
@@ -283,33 +282,6 @@ async function getContextFilePathsHierarchy(
   return finalPaths;
 }
 
-/**
- * @deprecated Use ContextFileDiscovery.discover instead. This function is kept for legacy compatibility.
- */
-async function getGeminiMdFilePathsInternal(
-  currentWorkingDirectory: string,
-  userHomePath: string,
-  debugMode: boolean,
-  fileService: FileDiscoveryService,
-  extensionContextFilePaths: string[] = [],
-): Promise<string[]> {
-  // Redirect to new unified system with legacy filename support
-  const { ContextFileDiscovery } = await import('../services/contextFileDiscovery.js');
-  const { ContextConfig } = await import('../services/contextConfig.js');
-  
-  // Create config that prioritizes legacy GEMINI.md files
-  const legacyConfig = ContextConfig.fromLegacySettings(getAllGeminiMdFilenames());
-  const discovery = new ContextFileDiscovery(legacyConfig.getConfig(), debugMode);
-  
-  const results = await discovery.discover({
-    workingDir: currentWorkingDirectory,
-    debug: debugMode,
-    extensionContextFiles: extensionContextFilePaths,
-    fileService
-  });
-  
-  return results.map(r => r.path);
-}
 
 /**
  * @deprecated Use ContextFileManager.readAndProcessFiles instead

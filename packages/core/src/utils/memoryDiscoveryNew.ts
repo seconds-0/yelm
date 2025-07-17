@@ -7,6 +7,7 @@
 import { ContextFileManager, ContextFileManagerFactory } from '../services/contextFileManager.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { ContextSettings } from '../services/contextConfig.js';
+import { DEFAULT_CONTEXT_HIERARCHY } from '../services/contextFilePatterns.js';
 
 /**
  * Unified memory discovery interface that replaces the old dual-mode system
@@ -100,7 +101,7 @@ export class LegacyMemoryDiscoveryAdapter {
     const hierarchy = Array.isArray(legacyFilenames) ? legacyFilenames : [legacyFilenames];
     
     this.discovery = createUnifiedMemoryDiscovery({
-      hierarchy: [...hierarchy, 'CLAUDE.md', 'GEMINI.md', '.cursor/rules']
+      hierarchy: [...hierarchy, ...DEFAULT_CONTEXT_HIERARCHY.slice(1)] // Skip 'agents.md' as it's already in hierarchy
     });
   }
 

@@ -29,11 +29,13 @@ import { AuthType } from '../core/contentGenerator.js';
 import readline from 'node:readline';
 
 //  OAuth Client ID used to initiate OAuth2Client class.
-// TODO: Replace with Yelm-specific OAuth credentials
+// For development/testing, set YELM_OAUTH_CLIENT_ID environment variable
+// For production use with Gemini CLI compatibility, use the credentials from .env.example
 const OAUTH_CLIENT_ID = process.env.YELM_OAUTH_CLIENT_ID || 'YOUR_CLIENT_ID_HERE';
 
 // OAuth Secret value used to initiate OAuth2Client class.
-// TODO: Replace with Yelm-specific OAuth credentials
+// For development/testing, set YELM_OAUTH_CLIENT_SECRET environment variable
+// For production use with Gemini CLI compatibility, use the credentials from .env.example
 const OAUTH_CLIENT_SECRET = process.env.YELM_OAUTH_CLIENT_SECRET || 'YOUR_CLIENT_SECRET_HERE';
 
 // OAuth Scopes for Cloud Code authorization.

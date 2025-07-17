@@ -12,7 +12,7 @@ import prettierConfig from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 import licenseHeader from 'eslint-plugin-license-header';
-import noRelativeCrossPackageImports from './eslint-rules/no-relative-cross-package-imports.js';
+// Removed custom rule to simplify CI
 import path from 'node:path'; // Use node: prefix for built-ins
 import url from 'node:url';
 
@@ -36,6 +36,12 @@ export default tseslint.config(
       'packages/vscode-ide-companion/dist/**',
       'eslint-rules/*',
       'bundle/**',
+      'references/**',
+      '**/*.md',
+      'Documentation/**',
+      '**/*.json',
+      '**/coverage/**',
+      '**/junit.xml',
     ],
   },
   eslint.configs.recommended,
@@ -216,20 +222,18 @@ export default tseslint.config(
   // Custom eslint rules for this repo
   {
     files: ['packages/**/*.{js,jsx,ts,tsx}'],
-    plugins: {
-      custom: {
-        rules: {
-          'no-relative-cross-package-imports': noRelativeCrossPackageImports,
-        },
-      },
-    },
     rules: {
-      // Enable and configure your custom rule
-      'custom/no-relative-cross-package-imports': [
+      // Use built-in import rules instead of custom rule
+      'no-restricted-imports': [
         'error',
         {
-          root: path.join(projectRoot, 'packages'),
-        },
+          patterns: [
+            {
+              group: ['../*/src/*', '../../*/src/*'],
+              message: 'Use package imports (e.g., yelm-core) instead of relative paths for cross-package imports'
+            }
+          ]
+        }
       ],
     },
   },

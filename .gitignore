@@ -10,5 +10,15 @@ build/
 *.log
 *.tmp
 
+# Test coverage files
+coverage/
+*/coverage/
+**/coverage/
+lcov-report/
+*.lcov
+junit.xml
+**/junit.xml
+.nyc_output/
+
 # macOS specifics
 .DS_Store 

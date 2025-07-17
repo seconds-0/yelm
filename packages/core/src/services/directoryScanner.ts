@@ -255,7 +255,6 @@ export class DirectoryScanner {
    * Get files sorted by priority (depth first, then name priority)
    */
   getFilesByPriority(index: FileIndex, nameHierarchy: string[]): FileInfo[] {
-    const results: FileInfo[] = [];
     const nameToIndex = new Map<string, number>();
     
     // Create priority mapping

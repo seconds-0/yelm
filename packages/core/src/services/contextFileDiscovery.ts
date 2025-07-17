@@ -8,8 +8,9 @@ import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
-import { ContextFileScanner, FileIndex } from './directoryScanner.js';
+import { ContextFileScanner } from './directoryScanner.js';
 import { FileDiscoveryService } from './fileDiscoveryService.js';
+import { DEFAULT_CONTEXT_HIERARCHY, resolveContextFilePath } from './contextFilePatterns.js';
 
 /**
  * Configuration for context file discovery
@@ -27,6 +28,10 @@ export interface ContextFileConfig {
   cacheEnabled: boolean;
   /** Maximum number of directories to scan */
   maxDirs: number;
+  /** Maximum number of cache entries to keep */
+  maxCacheSize: number;
+  /** Maximum age of cache entries in milliseconds */
+  maxCacheAge: number;
 }
 
 /**
@@ -69,13 +74,15 @@ interface CacheEntry {
   timestamp: number;
   /** Directory modification times for cache invalidation */
   dirModTimes: Map<string, number>;
+  /** Last access time for LRU eviction */
+  lastAccessed: number;
 }
 
 /**
  * Custom errors for context file discovery
  */
 export class ContextFileError extends Error {
-  constructor(message: string, public readonly code: string) {
+  constructor(message: string, readonly code: string) {
     super(message);
     this.name = 'ContextFileError';
   }
@@ -97,7 +104,7 @@ export class ConfigurationError extends ContextFileError {
  * Default configuration for context file discovery
  */
 export const DEFAULT_CONTEXT_CONFIG: ContextFileConfig = {
-  hierarchy: ['agents.md', 'CLAUDE.md', 'GEMINI.md', '.cursor/rules'],
+  hierarchy: DEFAULT_CONTEXT_HIERARCHY,
   globalDirs: ['.yelm', '.gemini'],
   maxDepth: 20,
   ignorePatterns: [
@@ -114,7 +121,9 @@ export const DEFAULT_CONTEXT_CONFIG: ContextFileConfig = {
     'temp'
   ],
   cacheEnabled: true,
-  maxDirs: 200
+  maxDirs: 200,
+  maxCacheSize: 100,
+  maxCacheAge: 5 * 60 * 1000 // 5 minutes
 };
 
 /**
@@ -122,6 +131,11 @@ export const DEFAULT_CONTEXT_CONFIG: ContextFileConfig = {
  */
 export class ContextFileDiscovery {
   private cache = new Map<string, CacheEntry>();
+  private cacheMetrics = {
+    hits: 0,
+    misses: 0,
+    evictions: 0
+  };
   private scanner: ContextFileScanner;
   private readonly logger = {
     debug: (message: string) => this.debug && console.debug(`[ContextFileDiscovery] ${message}`),
@@ -141,13 +155,13 @@ export class ContextFileDiscovery {
    * Discover context files starting from the working directory
    */
   async discover(options: DiscoveryOptions): Promise<ContextFileResult[]> {
-    const { workingDir, debug = false, extensionContextFiles = [], fileService } = options;
+    const { workingDir, extensionContextFiles = [], fileService } = options;
     
     this.logger.debug(`Starting discovery from: ${workingDir}`);
     
     // Check cache first
     const cacheKey = this.getCacheKey(workingDir);
-    if (this.config.cacheEnabled && this.isCacheValid(cacheKey, workingDir)) {
+    if (this.config.cacheEnabled && await this.isCacheValid(cacheKey, workingDir)) {
       this.logger.debug('Using cached results');
       return this.cache.get(cacheKey)!.results;
     }
@@ -181,9 +195,9 @@ export class ContextFileDiscovery {
       this.logger.debug(`Discovery complete. Found ${results.length} files`);
       return results;
       
-    } catch (error) {
-      this.logger.error(`Discovery failed: ${error}`);
-      throw error;
+    } catch (_error) {
+      this.logger.error(`Discovery failed: ${_error}`);
+      throw _error;
     }
   }
 
@@ -196,7 +210,7 @@ export class ContextFileDiscovery {
     try {
       // Check if directory exists and is accessible
       await fs.access(directory, fsSync.constants.R_OK);
-    } catch (error) {
+    } catch (_error) {
       this.logger.debug(`Directory not accessible: ${directory}`);
       return null;
     }
@@ -213,26 +227,13 @@ export class ContextFileDiscovery {
     return null;
   }
 
-  /**
-   * Clear the discovery cache
-   */
-  clearCache(): void {
-    this.cache.clear();
-    this.logger.debug('Cache cleared');
-  }
 
   /**
    * Check if a specific file exists and create result
    */
   private async checkFile(directory: string, filename: string, priority: number): Promise<ContextFileResult | null> {
-    let filePath: string;
-    
-    // Special handling for .cursor/rules
-    if (filename === '.cursor/rules') {
-      filePath = path.join(directory, '.cursor', 'rules');
-    } else {
-      filePath = path.join(directory, filename);
-    }
+    // Use centralized path resolution
+    const filePath = resolveContextFilePath(filename, directory);
 
     try {
       const stats = await fs.stat(filePath);
@@ -253,7 +254,7 @@ export class ContextFileDiscovery {
           level: 0 // Will be set correctly by caller
         };
       }
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist or isn't accessible
       this.logger.debug(`File not found: ${filePath}`);
     }
@@ -280,7 +281,7 @@ export class ContextFileDiscovery {
           results.push(result);
           break; // Only use first global directory that has files
         }
-      } catch (error) {
+      } catch (_error) {
         this.logger.debug(`Global directory not accessible: ${globalPath}`);
       }
     }
@@ -308,7 +309,7 @@ export class ContextFileDiscovery {
       const contextFiles = this.scanner.findContextFiles(index, this.config.hierarchy);
       
       // Convert to ContextFileResult objects
-      for (const [directory, fileInfo] of contextFiles.entries()) {
+      for (const [_directory, fileInfo] of contextFiles.entries()) {
         const priority = this.config.hierarchy.indexOf(fileInfo.name);
         if (priority !== -1) {
           // Log migration suggestion for legacy files
@@ -328,8 +329,8 @@ export class ContextFileDiscovery {
       
       this.logger.debug(`Found ${results.length} context files using optimized scanner`);
       
-    } catch (error) {
-      this.logger.error(`Optimized discovery failed, falling back to original method: ${error}`);
+    } catch (_error) {
+      this.logger.error(`Optimized discovery failed, falling back to original method: ${_error}`);
       // Fallback to original method
       return this.discoverProjectFiles(startDir);
     }
@@ -401,7 +402,7 @@ export class ContextFileDiscovery {
         if (stats.isDirectory()) {
           return currentDir;
         }
-      } catch (error) {
+      } catch (_error) {
         // Continue searching
       }
       
@@ -429,7 +430,7 @@ export class ContextFileDiscovery {
             level: 1000 // Extensions come after all other files
           });
         }
-      } catch (error) {
+      } catch (_error) {
         this.logger.warn(`Extension file not accessible: ${filePath}`);
       }
     }
@@ -468,32 +469,40 @@ export class ContextFileDiscovery {
   /**
    * Check if cache is valid for a working directory
    */
-  private isCacheValid(cacheKey: string, workingDir: string): boolean {
+  private async isCacheValid(cacheKey: string, _workingDir: string): Promise<boolean> {
     const entry = this.cache.get(cacheKey);
-    if (!entry) return false;
-    
-    // Check if cache is too old (5 minutes)
-    const now = Date.now();
-    if (now - entry.timestamp > 5 * 60 * 1000) {
-      this.cache.delete(cacheKey);
+    if (!entry) {
+      this.cacheMetrics.misses++;
       return false;
     }
+    
+    // Check if cache is too old
+    const now = Date.now();
+    if (now - entry.timestamp > this.config.maxCacheAge) {
+      this.cache.delete(cacheKey);
+      this.cacheMetrics.misses++;
+      return false;
+    }
+    
+    // Update last accessed time for LRU
+    entry.lastAccessed = now;
     
     // Check if directories have been modified
     for (const [dir, cachedTime] of entry.dirModTimes.entries()) {
       try {
-        const stats = fsSync.statSync(dir);
+        const stats = await fs.stat(dir);
         if (stats.mtime.getTime() !== cachedTime) {
           this.cache.delete(cacheKey);
           return false;
         }
-      } catch (error) {
+      } catch (_error) {
         // Directory no longer exists or accessible
         this.cache.delete(cacheKey);
         return false;
       }
     }
     
+    this.cacheMetrics.hits++;
     return true;
   }
 
@@ -515,19 +524,72 @@ export class ContextFileDiscovery {
       try {
         const stats = await fs.stat(dir);
         dirModTimes.set(dir, stats.mtime.getTime());
-      } catch (error) {
+      } catch (_error) {
         // Directory not accessible, skip caching
         this.logger.debug(`Cannot cache, directory not accessible: ${dir}`);
         return;
       }
     }
     
+    const now = Date.now();
+    
+    // Evict old entries if cache is full
+    this.evictIfNeeded();
+    
     this.cache.set(cacheKey, {
       results: [...results], // Create copy to avoid mutation
-      timestamp: Date.now(),
-      dirModTimes
+      timestamp: now,
+      dirModTimes,
+      lastAccessed: now
     });
     
     this.logger.debug(`Cached results for: ${workingDir}`);
+  }
+
+  /**
+   * Evict cache entries if we're at capacity
+   */
+  private evictIfNeeded(): void {
+    if (this.cache.size < this.config.maxCacheSize) {
+      return;
+    }
+
+    // Find the least recently used entry
+    let oldestKey: string | null = null;
+    let oldestTime = Date.now();
+    
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.lastAccessed < oldestTime) {
+        oldestTime = entry.lastAccessed;
+        oldestKey = key;
+      }
+    }
+    
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+      this.cacheMetrics.evictions++;
+      this.logger.debug(`Evicted LRU cache entry: ${oldestKey}`);
+    }
+  }
+
+  /**
+   * Get cache performance metrics
+   */
+  getCacheMetrics(): { hits: number; misses: number; evictions: number; hitRate: number; size: number } {
+    const total = this.cacheMetrics.hits + this.cacheMetrics.misses;
+    return {
+      ...this.cacheMetrics,
+      hitRate: total > 0 ? this.cacheMetrics.hits / total : 0,
+      size: this.cache.size
+    };
+  }
+
+  /**
+   * Clear all cache entries
+   */
+  clearCache(): void {
+    this.cache.clear();
+    this.cacheMetrics = { hits: 0, misses: 0, evictions: 0 };
+    this.logger.debug('Cache cleared');
   }
 }

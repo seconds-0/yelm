@@ -131,7 +131,11 @@ export class ClearcutLogger {
       };
       const bufs: Buffer[] = [];
       const req = https.request(options, (res) => {
-        res.on('data', (buf) => bufs.push(buf));
+        res.on('data', (buf) => {
+          // Ensure we always have a Buffer
+          const buffer = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
+          bufs.push(buffer);
+        });
         res.on('end', () => {
           resolve(Buffer.concat(bufs));
         });
