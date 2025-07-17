@@ -149,7 +149,7 @@ export class LoadedSettings {
     value: string | Record<string, MCPServerConfig> | undefined,
   ): void {
     const settingsFile = this.forScope(scope);
-    // @ts-expect-error - value can be string | Record<string, MCPServerConfig>
+    // @ts-expect-error - value can be string | Record<string, MCPServerConfig> | undefined but Settings has optional properties
     settingsFile.settings[key] = value;
     this._merged = this.computeMergedSettings();
     saveSettings(settingsFile);
