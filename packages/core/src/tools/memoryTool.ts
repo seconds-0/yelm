@@ -10,6 +10,7 @@ import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
+import { DEFAULT_CONTEXT_HIERARCHY } from '../services/contextFilePatterns.js';
 
 const memoryToolSchemaData: FunctionDeclaration = {
   name: 'save_memory',
@@ -50,7 +51,7 @@ Do NOT use this tool:
 export const GEMINI_CONFIG_DIR = '.gemini';
 export const YELM_CONFIG_DIR = '.yelm';
 export const DEFAULT_CONTEXT_FILENAME = 'agents.md';
-export const CONTEXT_FILE_HIERARCHY = ['agents.md', 'CLAUDE.md', 'GEMINI.md', '.cursor/rules'];
+export const CONTEXT_FILE_HIERARCHY = DEFAULT_CONTEXT_HIERARCHY;
 export const MEMORY_SECTION_HEADER = '## Yelm Added Memories';
 
 // This variable will hold the currently configured filename for context files.

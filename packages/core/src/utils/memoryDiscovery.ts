@@ -17,6 +17,7 @@ import {
 } from '../tools/memoryTool.js';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { processImports } from './memoryImportProcessor.js';
+import { resolveContextFilePath } from '../services/contextFilePatterns.js';
 
 // Simple console logger, similar to the one previously in CLI's config.ts
 // TODO: Integrate with a more robust server-side logger if available/appropriate.
@@ -76,7 +77,7 @@ async function findContextFileInDirectory(
   }
   
   // Special handling for .cursor/rules (last in hierarchy)
-  const cursorRulesPath = path.join(directory, '.cursor', 'rules');
+  const cursorRulesPath = resolveContextFilePath('.cursor/rules', directory);
   try {
     await fs.access(cursorRulesPath, fsSync.constants.R_OK);
     if (debugMode) {
@@ -243,7 +244,7 @@ async function getContextFilePathsHierarchy(
     }
   }
   
-  // Special search for .cursor/rules
+  // Special search for .cursor/rules using centralized path resolution
   const cursorDirs = await bfsFileSearch(resolvedCwd, {
     fileName: 'rules',
     maxDirs: MAX_DIRECTORIES_TO_SCAN_FOR_MEMORY,

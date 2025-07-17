@@ -6,6 +6,7 @@
 
 import * as path from 'path';
 import { ContextFileConfig, DEFAULT_CONTEXT_CONFIG, ConfigurationError } from './contextFileDiscovery.js';
+import { validateContextHierarchy } from './contextFilePatterns.js';
 
 /**
  * User-configurable context settings
@@ -208,9 +209,12 @@ export class ContextConfig {
         throw new ConfigurationError('Hierarchy entries must be non-empty strings');
       }
       
-      // Allow .cursor/rules as a special case
-      if (entry.includes('..') || (entry.includes('/') && entry !== '.cursor/rules')) {
-        throw new ConfigurationError('Hierarchy entries cannot contain path separators (except .cursor/rules)');
+      // Use centralized validation
+      try {
+        validateContextHierarchy([entry]);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        throw new ConfigurationError(`Invalid hierarchy entry: ${entry} - ${errorMessage}`);
       }
     }
 

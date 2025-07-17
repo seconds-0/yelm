@@ -10,6 +10,7 @@ import * as path from 'path';
 import { homedir } from 'os';
 import { ContextFileScanner } from './directoryScanner.js';
 import { FileDiscoveryService } from './fileDiscoveryService.js';
+import { DEFAULT_CONTEXT_HIERARCHY, resolveContextFilePath } from './contextFilePatterns.js';
 
 /**
  * Configuration for context file discovery
@@ -103,7 +104,7 @@ export class ConfigurationError extends ContextFileError {
  * Default configuration for context file discovery
  */
 export const DEFAULT_CONTEXT_CONFIG: ContextFileConfig = {
-  hierarchy: ['agents.md', 'CLAUDE.md', 'GEMINI.md', '.cursor/rules'],
+  hierarchy: DEFAULT_CONTEXT_HIERARCHY,
   globalDirs: ['.yelm', '.gemini'],
   maxDepth: 20,
   ignorePatterns: [
@@ -231,14 +232,8 @@ export class ContextFileDiscovery {
    * Check if a specific file exists and create result
    */
   private async checkFile(directory: string, filename: string, priority: number): Promise<ContextFileResult | null> {
-    let filePath: string;
-    
-    // Special handling for .cursor/rules
-    if (filename === '.cursor/rules') {
-      filePath = path.join(directory, '.cursor', 'rules');
-    } else {
-      filePath = path.join(directory, filename);
-    }
+    // Use centralized path resolution
+    const filePath = resolveContextFilePath(filename, directory);
 
     try {
       const stats = await fs.stat(filePath);
