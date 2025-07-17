@@ -5,27 +5,27 @@
 ### Agent Hooks ✅
 Created comprehensive agent hooks for development quality assurance:
 
-1. **Pre-Delivery Critical Review Hook** (`.kiro/hooks/pre-delivery-review.md`)
+1. **Pre-Delivery Critical Review Hook** (`.kiro/hooks/pre-delivery-review.kiro.hook`)
    - Adversarial self-review before task completion
    - Forces critical analysis of deliverables
    - Prevents premature completion declarations
 
-2. **Delivery Validation Hook** (`.kiro/hooks/delivery-validation.md`)
+2. **Delivery Validation Hook** (`.kiro/hooks/delivery-validation.kiro.hook`)
    - Verifies actual deliverables match requirements
    - Evidence-based validation process
    - Prevents scope drift and incomplete work
 
-3. **Code Review Hook** (`.kiro/hooks/code-review.md`)
-   - Automatic code quality review for TypeScript/JavaScript
+3. **Code Quality Review Hook** (`.kiro/hooks/code-quality-review.kiro.hook`)
+   - Automatic code quality review for TypeScript/JavaScript files
    - Yelm-specific standards compliance checking
    - Performance and security analysis
 
-4. **Documentation Update Hook** (`.kiro/hooks/documentation-update.md`)
-   - Automatic documentation updates when APIs change
-   - Keeps examples and guides current
-   - Maintains documentation quality
+4. **Adversarial Plan Review Hook** (`.kiro/hooks/adversarial-plan-review.kiro.hook`)
+   - Multi-perspective adversarial review of plans and solutions
+   - Optimizer vs Security Auditor vs Maintainability Critic perspectives
+   - Catches problems before implementation
 
-5. **Test Runner Hook** (`.kiro/hooks/test-runner.md`)
+5. **Test Execution Hook** (`.kiro/hooks/test-execution.kiro.hook`)
    - Intelligent test execution based on code changes
    - Coverage and performance validation
    - Regression prevention
@@ -69,10 +69,10 @@ Established comprehensive development standards:
 ### Context7 Integration ✅
 Created robust Context7 CLI wrapper:
 
+- **CLI Wrapper Approach**: Uses subprocess management instead of fragile MCP integration
 - **Error Handling**: Graceful fallback when Context7 unavailable
-- **Caching**: File-based caching with TTL
-- **Performance**: Timeout handling and optimization
-- **Reliability**: Subprocess management with comprehensive error handling
+- **Caching**: File-based caching with TTL for performance optimization
+- **Reliability**: Comprehensive subprocess management with timeout handling
 
 ## Git Repository Status
 
@@ -169,4 +169,27 @@ The Yelm Coding Agent project now has:
 - Clear development standards and processes
 - Foundation for Task 2: Create project foundation with Gemini CLI fork
 
-This implementation provides a robust foundation for professional software development with built-in quality assurance and deployment safety.
+## Architectural Decision: React/Ink Foundation
+
+### Decision Made ✅
+After critical review, decided to **use React/Ink foundation** from Gemini CLI rather than simple commander.js approach:
+
+**Rationale:**
+- **Baseline Compatibility**: Easier to maintain compatibility with Gemini CLI updates
+- **Proven Architecture**: Their React/Ink system is sophisticated and battle-tested
+- **Professional Experience**: Users expect the sophisticated terminal UI experience
+- **Extension Path**: We can extend their existing components rather than rebuild
+
+### Implementation Strategy ✅
+- **Extend AppWrapper**: Build on their React/Ink AppWrapper component
+- **Leverage UI Components**: Use their theming, spinners, and terminal interactions
+- **Add Context Features**: Integrate our context management into their UI system
+- **Selective Dependencies**: Keep React/Ink ecosystem, replace Google-specific services
+
+### Documentation Updated ✅
+- **Development Standards**: Updated to reflect React/Ink patterns
+- **Design Document**: Updated with correct technology stack decision
+- **Gemini CLI Analysis**: Updated integration strategy to extension approach
+- **Project Structure**: Updated to match their monorepo patterns
+
+This implementation provides a robust foundation for professional software development with built-in quality assurance and deployment safety, now properly aligned with React/Ink architecture for maximum compatibility with Gemini CLI baseline.

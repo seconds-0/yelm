@@ -1,6 +1,6 @@
 {
   "name": "yelm-core",
-  "version": "0.1.0",
+  "version": "0.1.12",
   "description": "Yelm Coding Agent Core",
   "repository": {
     "type": "git",

@@ -57,19 +57,20 @@ gemini-cli/
 
 ## Integration Strategy for Yelm
 
-### Recommended Approach: Independent Fork
+### Recommended Approach: Extend React/Ink Foundation
 
-**Why Fork Instead of Extend:**
-1. **Independence**: Control our own update schedule
-2. **Customization**: Deep modifications to core functionality
-3. **Reliability**: No dependency on their breaking changes
-4. **Maintenance**: Easier to maintain our specific features
+**Why Extend Instead of Replace:**
+1. **Baseline Compatibility**: Direct compatibility with their UI improvements
+2. **Proven Architecture**: Their React/Ink system is sophisticated and battle-tested
+3. **Professional Experience**: Users expect the sophisticated Gemini CLI experience
+4. **Maintenance**: Easier to pull their UI improvements and updates
 
-**Fork Strategy:**
-1. Fork the repository to our own organization
-2. Maintain our own branch with Yelm-specific modifications
-3. Selectively merge upstream updates when beneficial
-4. Preserve their core patterns while adding our context management
+**Extension Strategy:**
+1. Use their React/Ink foundation as our base UI system
+2. Extend their AppWrapper component with context management features
+3. Add our commands to their existing command structure
+4. Leverage their theming, spinners, and UI components
+5. Replace Google-specific services with our implementations
 
 ### Technical Integration Points
 
