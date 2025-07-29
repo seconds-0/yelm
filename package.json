@@ -28,6 +28,7 @@
     "debug": "cross-env DEBUG=1 node --inspect-brk scripts/start.js",
     "generate": "node scripts/generate-git-commit-info.js",
     "build": "node scripts/build.js",
+    "setup-oauth": "node scripts/setup-oauth.js",
     "build:packages": "npm run build --workspaces",
     "bundle": "npm run generate && node esbuild.config.js && node scripts/copy_bundle_assets.js",
     "test": "npm run test --workspaces",

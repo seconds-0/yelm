@@ -4,7 +4,19 @@
 
 To enable Google authentication in Yelm, you need to configure OAuth credentials.
 
-### Option 1: Use Gemini CLI Credentials (Recommended for Testing)
+### Automated Setup (Recommended)
+
+Run the setup script to configure OAuth credentials interactively:
+
+```bash
+npm run setup-oauth
+```
+
+This script will guide you through setting up OAuth credentials, either using Gemini CLI's credentials or creating your own.
+
+### Manual Setup
+
+#### Option 1: Use Gemini CLI Credentials (Recommended for Testing)
 
 1. Copy `.env.example` to `.env`:
    ```bash
@@ -17,7 +29,7 @@ To enable Google authentication in Yelm, you need to configure OAuth credentials
    
 3. Replace the placeholders in your `.env` file with these values.
 
-### Option 2: Create Your Own OAuth Credentials
+#### Option 2: Create Your Own OAuth Credentials
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one

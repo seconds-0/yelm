@@ -28,15 +28,12 @@ import {
 import { AuthType } from '../core/contentGenerator.js';
 import readline from 'node:readline';
 
-//  OAuth Client ID used to initiate OAuth2Client class.
-// For development/testing, set YELM_OAUTH_CLIENT_ID environment variable
-// For production use with Gemini CLI compatibility, use the credentials from .env.example
-const OAUTH_CLIENT_ID = process.env.YELM_OAUTH_CLIENT_ID || 'YOUR_CLIENT_ID_HERE';
-
-// OAuth Secret value used to initiate OAuth2Client class.
-// For development/testing, set YELM_OAUTH_CLIENT_SECRET environment variable
-// For production use with Gemini CLI compatibility, use the credentials from .env.example
-const OAUTH_CLIENT_SECRET = process.env.YELM_OAUTH_CLIENT_SECRET || 'YOUR_CLIENT_SECRET_HERE';
+// Helper function to get OAuth credentials
+function getOAuthCredentials() {
+  const clientId = process.env.YELM_OAUTH_CLIENT_ID || '';
+  const clientSecret = process.env.YELM_OAUTH_CLIENT_SECRET || '';
+  return { clientId, clientSecret };
+}
 
 // OAuth Scopes for Cloud Code authorization.
 const OAUTH_SCOPE = [
@@ -68,9 +65,27 @@ export async function getOauthClient(
   authType: AuthType,
   config: Config,
 ): Promise<OAuth2Client> {
+  // Get OAuth credentials dynamically
+  const { clientId, clientSecret } = getOAuthCredentials();
+  
+  // Check if OAuth credentials are configured
+  if (!clientId || !clientSecret || 
+      clientId === 'YOUR_CLIENT_ID_HERE' || 
+      clientSecret === 'YOUR_CLIENT_SECRET_HERE' ||
+      clientId === '<GET_FROM_GEMINI_CLI_SOURCE>' ||
+      clientSecret === '<GET_FROM_GEMINI_CLI_SOURCE>') {
+    throw new Error(
+      'OAuth credentials not configured. Please set up your .env file:\n' +
+      '1. Copy .env.example to .env\n' +
+      '2. Get OAuth credentials from https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/oauth2.ts\n' +
+      '3. Replace the placeholders with actual values\n\n' +
+      'For more details, see Documentation/OAUTH_SETUP.md'
+    );
+  }
+
   const client = new OAuth2Client({
-    clientId: OAUTH_CLIENT_ID,
-    clientSecret: OAUTH_CLIENT_SECRET,
+    clientId,
+    clientSecret,
   });
 
   client.on('tokens', async (tokens: Credentials) => {
