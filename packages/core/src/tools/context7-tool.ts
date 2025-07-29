@@ -152,6 +152,7 @@ Examples:
         topic: params.topic,
         tokens: params.tokens,
         timeout: 3000, // 3 second timeout
+        debug: this.config.getDebugMode(), // Pass debug mode from config
       };
 
       // Call Context7Wrapper

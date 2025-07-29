@@ -23,7 +23,9 @@ describe('Context7Tool', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockConfig = {} as Config;
+    mockConfig = {
+      getDebugMode: vi.fn().mockReturnValue(false)
+    } as unknown as Config;
     tool = new Context7Tool(mockConfig);
     
     // Get the mock instance
@@ -116,6 +118,7 @@ describe('Context7Tool', () => {
         libraryName: 'react',
         topic: 'hooks',
         timeout: 3000,
+        debug: false,
       });
 
       expect(result.summary).toBe('Fetched react (hooks) documentation');
@@ -184,6 +187,7 @@ describe('Context7Tool', () => {
         libraryName: 'angular',
         tokens: 5000,
         timeout: 3000,
+        debug: false,
       });
     });
   });
