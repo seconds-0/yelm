@@ -29,6 +29,12 @@ jobs:
       - name: Build project
         run: npm run build
         
+      - name: Make context7-cli available
+        run: |
+          cd packages/cli
+          npm link
+          cd ../..
+        
       - name: Run type checking
         run: npm run typecheck
         

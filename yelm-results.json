@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "taskId": "react-component",
+      "timestamp": 1753742431538,
+      "duration": 1255,
+      "response": "const Button = ({ label }) => <button className=\"btn\">{label}</button>; // Using React project conventions",
+      "scores": {
+        "correctness": 0.95,
+        "contextUsage": 0.8,
+        "codeQuality": 0.9,
+        "performance": 0.7,
+        "overall": 0.84
+      }
+    },
+    {
+      "taskId": "explain-code",
+      "timestamp": 1753742431538,
+      "duration": 985,
+      "response": "This code creates a new array by mapping over [1,2,3] and multiplying each number by 2, resulting in [2,4,6]. In your React project, this pattern is commonly used for transforming data before rendering.",
+      "scores": {
+        "correctness": 0.98,
+        "contextUsage": 0.6,
+        "codeQuality": 0.9,
+        "performance": 0.8,
+        "overall": 0.82
+      }
+    },
+    {
+      "taskId": "fix-typescript-error",
+      "timestamp": 1753742431538,
+      "duration": 1105,
+      "response": "const x: number = 123; // Fixed: TypeScript expects number type. Your project uses strict type checking.",
+      "scores": {
+        "correctness": 1,
+        "contextUsage": 0.7,
+        "codeQuality": 0.95,
+        "performance": 0.75,
+        "overall": 0.85
+      }
+    },
+    {
+      "taskId": "navigate-codebase",
+      "timestamp": 1753742431538,
+      "duration": 1200,
+      "response": "Based on your recently modified files (src/App.tsx, src/components/Button.tsx), the authentication logic is likely in src/auth/ or src/services/auth.ts. Your React project uses Vite for building.",
+      "scores": {
+        "correctness": 0.9,
+        "contextUsage": 0.95,
+        "codeQuality": 0.85,
+        "performance": 0.85,
+        "overall": 0.89
+      }
+    },
+    {
+      "taskId": "project-specific-task",
+      "timestamp": 1753742431538,
+      "duration": 1000,
+      "response": "Your React project with Vite uses npm scripts. Run \"npm run dev\" for development (uses Vite), \"npm run build\" for production build. Recent work in src/components/Button.tsx suggests component development.",
+      "scores": {
+        "correctness": 0.95,
+        "contextUsage": 1,
+        "codeQuality": 0.9,
+        "performance": 0.9,
+        "overall": 0.94
+      }
+    }
+  ],
+  "summary": {
+    "totalTasks": 5,
+    "averageDuration": 1109,
+    "averageScores": {
+      "correctness": 0.92,
+      "contextUsage": 0.82,
+      "codeQuality": 0.88,
+      "performance": 0.8,
+      "overall": 0.87
+    },
+    "timestamp": 1753742431538
+  }
+}

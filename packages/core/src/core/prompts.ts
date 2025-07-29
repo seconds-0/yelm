@@ -270,7 +270,40 @@ Your core function is efficient and safe assistance. Balance extreme conciseness
       ? `\n\n---\n\n${userMemory.trim()}`
       : '';
 
-  return `${basePrompt}${memorySuffix}`;
+  // Add project context if available
+  let projectContext = '';
+  const projectType = process.env.YELM_PROJECT_TYPE;
+  const buildTool = process.env.YELM_BUILD_TOOL;
+  const recentFiles = process.env.YELM_RECENT_FILES;
+  
+  if (projectType && projectType !== 'null') {
+    projectContext = `\n\n# Project Context\nThis is a ${projectType} project.`;
+    if (buildTool && buildTool !== 'null') {
+      projectContext += ` Uses ${buildTool} for building.`;
+    }
+    if (recentFiles && recentFiles !== 'null') {
+      projectContext += `\nRecently modified files: ${recentFiles}`;
+    }
+  }
+
+  // Add documentation context if available
+  let docContext = '';
+  const docContent = process.env.YELM_DOC_CONTEXT;
+  const docFile = process.env.YELM_DOC_FILE;
+  const docLibrary = process.env.YELM_DOC_LIBRARY;
+  
+  if (docContent && docContent !== 'null') {
+    docContext = `\n\n# Documentation Context`;
+    if (docFile) {
+      docContext += `\nFor file: ${docFile}`;
+    }
+    if (docLibrary) {
+      docContext += ` (${docLibrary} documentation)`;
+    }
+    docContext += `\n${docContent}`;
+  }
+
+  return `${basePrompt}${projectContext}${docContext}${memorySuffix}`;
 }
 
 /**
