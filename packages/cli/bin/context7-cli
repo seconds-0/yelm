@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+const args = process.argv.slice(2);
+
+if (args.length < 1) {
+  console.error('Usage: context7-cli <library> [topic] [tokens]');
+  process.exit(1);
+}
+
+const [library, topic, tokens] = args;
+
+// For now, return mock data until Context7 MCP is available
+const result = {
+  success: true,
+  library,
+  topic: topic || 'default',
+  documentation: `Documentation for ${library}${topic ? ` - ${topic}` : ''}`,
+  timestamp: Date.now()
+};
+
+console.log(JSON.stringify(result));

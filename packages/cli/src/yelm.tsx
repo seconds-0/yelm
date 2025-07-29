@@ -37,6 +37,7 @@ import {
   logUserPrompt,
   AuthType,
   getOauthClient,
+  ContextManager,
 } from 'yelm-core';
 import { validateAuthMethod } from './config/auth.js';
 import { setMaxSizedBoxDebugging } from './ui/components/shared/MaxSizedBox.js';
@@ -140,6 +141,10 @@ export async function main() {
   setMaxSizedBoxDebugging(config.getDebugMode());
 
   await config.initialize();
+
+  // Initialize project context detection (Yelm enhancement)
+  const contextManager = new ContextManager();
+  await contextManager.initializeContext(process.cwd());
 
   if (settings.merged.theme) {
     if (!themeManager.setActiveTheme(settings.merged.theme)) {

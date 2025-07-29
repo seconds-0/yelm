@@ -9,7 +9,8 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "yelm": "dist/index.js"
+    "yelm": "dist/index.js",
+    "context7-cli": "./bin/context7-cli"
   },
   "scripts": {
     "build": "node ../../scripts/build_package.js",
@@ -23,7 +24,8 @@
     "prepare": "husky"
   },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "config": {
     "sandboxImageUri": "us-docker.pkg.dev/gemini-code-dev/gemini-cli/sandbox:0.1.12"
