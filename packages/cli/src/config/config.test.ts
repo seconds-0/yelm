@@ -362,13 +362,21 @@ describe('loadCliConfig telemetry', () => {
 });
 
 describe('Hierarchical Memory Loading (config.ts) - Placeholder Suite', () => {
+  const originalArgv = process.argv;
+  const originalEnv = { ...process.env };
+  
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(os.homedir).mockReturnValue('/mock/home/user');
-    // Other common mocks would be reset here.
+    process.env.GEMINI_API_KEY = 'test-api-key';
+    // Clear debug environment variables to ensure consistent test behavior
+    delete process.env.DEBUG;
+    delete process.env.DEBUG_MODE;
   });
 
   afterEach(() => {
+    process.argv = originalArgv;
+    process.env = originalEnv;
     vi.restoreAllMocks();
   });
 
