@@ -41,17 +41,61 @@ global.fetch = vi.fn();
 
 describe('oauth2', () => {
   let tempHomeDir: string;
+  let originalClientId: string | undefined;
+  let originalClientSecret: string | undefined;
 
   beforeEach(() => {
     tempHomeDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'gemini-cli-test-home-'),
     );
     (os.homedir as Mock).mockReturnValue(tempHomeDir);
+    
+    // Save original env vars and set test credentials
+    originalClientId = process.env.YELM_OAUTH_CLIENT_ID;
+    originalClientSecret = process.env.YELM_OAUTH_CLIENT_SECRET;
+    process.env.YELM_OAUTH_CLIENT_ID = 'test-client-id.apps.googleusercontent.com';
+    process.env.YELM_OAUTH_CLIENT_SECRET = 'test-client-secret';
   });
   afterEach(() => {
     fs.rmSync(tempHomeDir, { recursive: true, force: true });
     vi.clearAllMocks();
     delete process.env.CLOUD_SHELL;
+    
+    // Restore original env vars
+    if (originalClientId) {
+      process.env.YELM_OAUTH_CLIENT_ID = originalClientId;
+    } else {
+      delete process.env.YELM_OAUTH_CLIENT_ID;
+    }
+    if (originalClientSecret) {
+      process.env.YELM_OAUTH_CLIENT_SECRET = originalClientSecret;
+    } else {
+      delete process.env.YELM_OAUTH_CLIENT_SECRET;
+    }
+  });
+
+  it('should throw error when OAuth credentials are not configured', async () => {
+    // Save original env vars
+    const originalClientId = process.env.YELM_OAUTH_CLIENT_ID;
+    const originalClientSecret = process.env.YELM_OAUTH_CLIENT_SECRET;
+    
+    // Test with missing credentials
+    delete process.env.YELM_OAUTH_CLIENT_ID;
+    delete process.env.YELM_OAUTH_CLIENT_SECRET;
+    
+    await expect(getOauthClient(AuthType.LOGIN_WITH_GOOGLE, mockConfig))
+      .rejects.toThrow('OAuth credentials not configured');
+    
+    // Test with placeholder credentials
+    process.env.YELM_OAUTH_CLIENT_ID = '<GET_FROM_GEMINI_CLI_SOURCE>';
+    process.env.YELM_OAUTH_CLIENT_SECRET = '<GET_FROM_GEMINI_CLI_SOURCE>';
+    
+    await expect(getOauthClient(AuthType.LOGIN_WITH_GOOGLE, mockConfig))
+      .rejects.toThrow('OAuth credentials not configured');
+    
+    // Restore env vars
+    if (originalClientId) process.env.YELM_OAUTH_CLIENT_ID = originalClientId;
+    if (originalClientSecret) process.env.YELM_OAUTH_CLIENT_SECRET = originalClientSecret;
   });
 
   it('should perform a web login', async () => {
